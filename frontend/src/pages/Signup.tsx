@@ -8,7 +8,7 @@ export const Signup = () => {
         <Auth type="signup" />
       </div>
       <div className="invisible lg:visible">
-        <Quote />
+        <Quote type="signup" />
       </div>
     </div>
   );

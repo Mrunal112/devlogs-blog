@@ -3,9 +3,11 @@ import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { backendUrl } from "../config";
+import { useAuth } from "../hooks/useAuth";
 
 export const Auth = ({ type }: { type: "signin" | "signup" }) => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [signupInputs, setSignupInputs] = useState<SignupInput>({
     username: "",
@@ -14,7 +16,7 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
   });
 
   const [signinInput, setsigninInput] = useState<SigninInput>({
-    email: "",
+    emailusername: "",
     password: "",
   });
 
@@ -27,12 +29,13 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
 
       const response = await axios.post(`${backendUrl}${endpoint}`, data);
 
-      if (response.data.jwt) {
-        localStorage.setItem("token", response.data.jwt);
+      if (response.data.token) {
+        login(response.data.token);
         console.log("Authentication successful:", response.data);
-        navigate("/blog");
+        navigate("/blogs");
       }
     } catch (error) {
+      alert("Error while signing up");
       console.error("Authentication failed:", error);
     }
   }
@@ -85,7 +88,7 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
               onChange={(e) =>
                 type === "signup"
                   ? setSignupInputs({ ...signupInputs, email: e.target.value })
-                  : setsigninInput({ ...signinInput, email: e.target.value })
+                  : setsigninInput({ ...signinInput, emailusername: e.target.value })
               }
             />
           </div>

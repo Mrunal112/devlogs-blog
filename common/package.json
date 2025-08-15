@@ -1,14 +1,25 @@
 {
   "name": "@mrunal121/codelogs-blog-common",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "blog",
+    "typescript",
+    "zod",
+    "validation",
+    "schemas"
+  ],
+  "author": "Mrunal",
   "license": "ISC",
-  "descriptio n": "",
+  "description": "Common types and schemas for CodeLogs Blog",
   "dependencies": {
     "zod": "^4.0.14"
   },

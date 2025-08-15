@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mrunal121/codelogs-blog-common": "^1.0.0",
+    "@mrunal121/codelogs-blog-common": "^1.0.1",
     "@tailwindcss/vite": "^4.1.12",
     "axios": "^1.11.0",
     "react": "^19.1.1",
