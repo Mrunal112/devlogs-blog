@@ -160,15 +160,6 @@ This is a monorepo containing three main packages:
    npm run build
    ```
 
-### 🎯 **Available Features After Setup**
-- ✅ **Theme Toggle** - Dark/light mode with system preference
-- ✅ **User Authentication** - Sign up, sign in, and protected routes
-- ✅ **Blog Publishing** - Create blogs with draft auto-save
-- ✅ **Blog Discovery** - Browse all blogs with API integration
-- ✅ **Individual Blog Pages** - Read full articles with metadata
-- ✅ **Smart Tags** - Auto-generated tags with proper capitalization
-- ✅ **Responsive Design** - Works seamlessly on all devices
-
 ## 📁 Project Structure
 
 ```
@@ -300,85 +291,13 @@ npm run build
 **Frontend (config.ts):**
 - Update `backendUrl` for your production API endpoint
 
-## ✨ Key Features Implemented
-
-### 🎨 **Advanced UI/UX**
-- **Smart Theme System** - Automatic system preference detection with manual override
-- **Responsive Design** - Mobile-first approach with Tailwind CSS v4
-- **Loading States** - Skeleton loaders and spinner components
-- **Error Handling** - Graceful error boundaries and user feedback
-
-### 📝 **Content Management**
-- **Draft System** - Auto-save drafts to localStorage with manual controls
-- **Tag Intelligence** - Automatic tag extraction with proper capitalization (e.g., "web development" → "Web Development")
-- **Rich Metadata** - Read time calculation, author attribution, publication dates
-- **Content Validation** - Real-time form validation and feedback
-
-### 🔧 **Technical Excellence**
-- **Type Safety** - End-to-end TypeScript with strict mode
-- **API Integration** - Comprehensive error handling with fallback mock data
-- **Performance** - Optimized bundle sizes and lazy loading
-- **Accessibility** - ARIA labels and keyboard navigation support
-
 ## 🤝 Contributing
 
-We welcome contributions! Here's how to get started:
-
-1. **Fork the repository**
-   ```bash
-   git clone https://github.com/Mrunal112/devlogs-blog.git
-   ```
-
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-
-3. **Make your changes**
-   - Follow TypeScript best practices
-   - Maintain consistent code formatting
-   - Add appropriate tests if applicable
-   - Update documentation as needed
-
-4. **Commit your changes**
-   ```bash
-   git commit -m 'Add some amazing feature'
-   ```
-
-5. **Push to the branch**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-
-6. **Open a Pull Request**
-   - Provide a clear description of changes
-   - Include screenshots for UI changes
-   - Reference any related issues
-
-### Development Guidelines
-- **Code Style** - Follow existing patterns and use ESLint
-- **TypeScript** - Maintain strict type safety throughout
-- **Components** - Keep components focused and reusable
-- **Testing** - Test critical functionality and edge cases
-
-## 🔮 Future Enhancements
-
-### Planned Features
-- **Search Functionality** - Full-text search across blog content
-- **Comment System** - User comments and discussions
-- **Blog Categories** - Organize content with hierarchical categories
-- **User Profiles** - Extended user profiles with bio and social links
-- **Rich Text Editor** - WYSIWYG editor for enhanced content creation
-- **Image Uploads** - Support for images and media in blog posts
-- **Social Sharing** - Share buttons for popular social platforms
-- **Analytics Dashboard** - View metrics for published content
-
-### Technical Improvements
-- **Caching Strategy** - Implement Redis caching for better performance
-- **SEO Optimization** - Meta tags, structured data, and sitemap generation
-- **PWA Features** - Offline support and push notifications
-- **Testing Suite** - Comprehensive unit and integration tests
-- **CI/CD Pipeline** - Automated testing and deployment
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
@@ -388,31 +307,11 @@ This project is licensed under the ISC License. See the LICENSE file for details
 
 **Mrunal** - [@Mrunal112](https://github.com/Mrunal112)
 
-- 🌐 **GitHub**: [Mrunal112](https://github.com/Mrunal112)
-- 📧 **Email**: [Contact for collaboration opportunities]
-- 💼 **Project**: Full-stack developer passionate about modern web technologies
-
 ## 🙏 Acknowledgments
 
-- **React Team** - For the incredible React 19 concurrent features
-- **Vercel** - For the amazing Vite build tool and performance optimizations
-- **Tailwind CSS** - For the utility-first CSS framework v4 features
-- **Cloudflare** - For the powerful Workers platform and global edge network
-- **Prisma** - For the excellent ORM and database tooling
-- **Hono** - For the lightweight and fast web framework
-- **Open Source Community** - For the countless libraries and tools that make modern development possible
-
-## 🚀 Project Stats
-
-- ⚡ **Performance** - Optimized for Core Web Vitals
-- 🎯 **Accessibility** - WCAG 2.1 compliant design
-- 📱 **Mobile-First** - Responsive design for all devices
-- 🌍 **Global** - Edge deployment for worldwide performance
-- 🔒 **Secure** - JWT authentication and data validation
-- 🎨 **Modern** - Latest web technologies and best practices
+- Inspired by modern blogging platforms
+- Uses cutting-edge web technologies for optimal performance
 
 ---
-
-**Built with ❤️ using cutting-edge web technologies**
 
 **Happy Coding! 🚀**
