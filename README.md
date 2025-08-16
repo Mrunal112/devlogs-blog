@@ -43,37 +43,6 @@ A comprehensive full-stack blog application built with modern web technologies, 
 - **Database Management** - Prisma ORM with PostgreSQL and migration support
 - **Mock Data Fallbacks** - Graceful degradation with mock content for development
 
-## 📸 Screenshots
-
-### 🏠 **Home Page**
-![Home Page](SS/HomePage.png)
-*Clean, responsive homepage with theme toggle and modern design*
-
-### 📝 **Blog Publishing**
-![Publish Blog](SS/PublishBlog.png)
-*Advanced blog creation form with draft management and real-time validation*
-
-### 🔐 **Authentication**
-![Sign In](SS/SignIn.png)
-*Secure user authentication with modern UI design*
-
-### 📚 **Blog Discovery**
-![View Blogs](SS/ViewBlogs.png)
-*Blog listing page with smart tags, metadata, and responsive cards*
-
----
-
-### 🎨 **Key Visual Features Demonstrated**
-
-🔹 **Modern UI Design** - Clean, professional interface with consistent styling  
-🔹 **Dark/Light Theme** - Seamless theme switching with system preference detection  
-🔹 **Responsive Layout** - Mobile-first design that works on all screen sizes  
-🔹 **Smart Typography** - Readable fonts and proper spacing throughout  
-🔹 **Interactive Elements** - Hover effects, buttons, and navigation components  
-🔹 **Content Organization** - Well-structured blog cards with metadata display  
-🔹 **Form Design** - Intuitive forms with validation and user feedback  
-🔹 **Navigation** - Clear header navigation with user authentication status  
-
 ## 🏗️ Architecture
 
 This is a monorepo containing three main packages:
