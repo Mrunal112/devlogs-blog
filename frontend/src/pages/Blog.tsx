@@ -1,10 +1,11 @@
-import { useParams } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { backendUrl } from '../config';
 
-// Example blog data (fallback/template)
-const exampleBlog = {
+// Mock blog data for fallback
+const mockBlogData = {
+  "1": {
     id: "1",
     title: "Docker Fundamentals: Complete Guide for Beginners",
     content: "Docker has revolutionized the way we develop, ship, and run applications. In this comprehensive guide, we'll explore everything you need to know about Docker containers, from basic concepts to advanced deployment strategies. Learn how to containerize your applications, manage Docker images, and orchestrate multi-container applications with Docker Compose. We'll cover best practices for writing Dockerfiles, optimizing container performance, and troubleshooting common Docker issues that developers face in production environments.",
@@ -16,25 +17,11 @@ const exampleBlog = {
     readTime: "8 min read",
     tags: ["Docker", "DevOps", "Containers"],
     isBookmarked: false
+  }
 };
 
-// Interface for API blog response
-interface ApiBlogResponse {
-  id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  published?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  author?: {
-    name?: string;
-    username?: string;
-  };
-}
-
-// Interface for transformed blog data
-interface BlogData {
+// Interface for blog post data
+interface BlogPost {
   id: string;
   title: string;
   content: string;
@@ -43,18 +30,61 @@ interface BlogData {
     avatar?: string;
   };
   publishedDate: string;
-  readTime: string;
-  tags: string[];
-  isBookmarked: boolean;
+  readTime?: string;
+  tags?: string[];
+  isBookmarked?: boolean;
+}
+
+// Interface for API blog response
+interface ApiBlogPost {
+  id: string;
+  title?: string;
+  content?: string;
+  authorId?: string;
+  author?: {
+    name?: string;
+    username?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export const Blog = () => {
     const { id } = useParams();
-    const [blog, setBlog] = useState<BlogData | null>(null);
+    const navigate = useNavigate();
+    const [blog, setBlog] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
-    // Function to calculate read time based on content length
+
+    // Function to extract tags from title and content
+    const extractTags = (title: string, content: string): string[] => {
+        const text = `${title} ${content}`.toLowerCase();
+        const commonTechTerms = [
+            'docker', 'kubernetes', 'devops', 'containers', 'microservices', 'api', 'rest',
+            'javascript', 'typescript', 'react', 'node', 'python', 'java', 'spring',
+            'aws', 'azure', 'cloud', 'serverless', 'lambda', 'database', 'sql', 'nosql',
+            'mongodb', 'postgresql', 'redis', 'git', 'ci/cd', 'testing', 'security',
+            'performance', 'optimization', 'architecture', 'design patterns', 'algorithms',
+            'frontend', 'backend', 'fullstack', 'web development', 'mobile', 'ios', 'android'
+        ];
+
+        const foundTags = commonTechTerms.filter(term => 
+            text.includes(term.toLowerCase())
+        );
+
+        // Return maximum of 3 tags, prioritize longer/more specific terms
+        return foundTags
+            .sort((a, b) => b.length - a.length)
+            .slice(0, 3)
+            .map(tag => {
+                // Handle multi-word tags (e.g., "web development" -> "Web Development")
+                return tag.split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            });
+    };
+
+    // Function to calculate read time
     const calculateReadTime = (content: string): string => {
         const wordsPerMinute = 200;
         const wordCount = content.split(' ').length;
@@ -62,61 +92,41 @@ export const Blog = () => {
         return `${readTime} min read`;
     };
 
-    // Function to generate tags from content
-    const generateTags = (title: string, content: string): string[] => {
-        // Define keywords with proper capitalization
-        const techKeywords = {
-            'docker': 'Docker',
-            'javascript': 'JavaScript', 
-            'typescript': 'TypeScript',
-            'react': 'React',
-            'node': 'Node.js',
-            'python': 'Python',
-            'devops': 'DevOps',
-            'aws': 'AWS',
-            'kubernetes': 'Kubernetes',
-            'git': 'Git',
-            'database': 'Database',
-            'api': 'API',
-            'frontend': 'Frontend',
-            'backend': 'Backend',
-            'fullstack': 'Full Stack',
-            'web': 'Web',
-            'mobile': 'Mobile',
-            'tutorial': 'Tutorial',
-            'guide': 'Guide'
-        };
-        
-        const text = (title + ' ' + content).toLowerCase();
-        const foundTags = Object.keys(techKeywords).filter(keyword => text.includes(keyword));
-        
-        // Map to properly capitalized versions
-        const capitalizedTags = foundTags.map(tag => techKeywords[tag as keyof typeof techKeywords]);
-        
-        return capitalizedTags.length > 0 ? capitalizedTags.slice(0, 3) : ['Blog'];
+    // Function to format date
+    const formatDate = (dateString: string): string => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            month: 'long', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
     };
 
-    // Function to transform API blog to BlogData format
-    const transformApiBlog = useCallback((apiBlog: ApiBlogResponse): BlogData => {
-        return {
-            id: apiBlog.id,
-            title: apiBlog.title,
-            content: apiBlog.content,
-            author: {
-                name: apiBlog.author?.name || apiBlog.author?.username || `User ${apiBlog.authorId.substring(0, 8)}`,
-                avatar: undefined
-            },
-            publishedDate: apiBlog.createdAt || new Date().toISOString(),
-            readTime: calculateReadTime(apiBlog.content),
-            tags: generateTags(apiBlog.title, apiBlog.content),
-            isBookmarked: false
-        };
-    }, []);
-
-    // Fetch blog data from API
+    // Fetch blog post data
     useEffect(() => {
+        // Transform API blog to BlogPost format
+        const transformApiBlog = (apiBlog: ApiBlogPost): BlogPost => {
+            const title = apiBlog.title || 'Untitled';
+            const content = apiBlog.content || 'No content available';
+            const publishedDate = apiBlog.createdAt || new Date().toISOString();
+            
+            return {
+                id: apiBlog.id,
+                title,
+                content,
+                author: {
+                    name: apiBlog.author?.name || apiBlog.author?.username || 'Anonymous'
+                },
+                publishedDate,
+                readTime: calculateReadTime(content),
+                tags: extractTags(title, content),
+                isBookmarked: false
+            };
+        };
+
         const fetchBlog = async () => {
             if (!id) {
+                setError('Blog ID is required');
                 setLoading(false);
                 return;
             }
@@ -124,162 +134,202 @@ export const Blog = () => {
             try {
                 setLoading(true);
                 setError(null);
+
+                // First check if we have mock data for this ID
+                if (mockBlogData[id as keyof typeof mockBlogData]) {
+                    setBlog(mockBlogData[id as keyof typeof mockBlogData]);
+                    setLoading(false);
+                    return;
+                }
+
+                // Try to fetch from API
+                const token = localStorage.getItem('token');
+                const headers: Record<string, string> = {
+                    'Content-Type': 'application/json',
+                };
                 
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
                 const response = await fetch(`${backendUrl}/blog/${id}`, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
+                    headers
                 });
 
                 if (!response.ok) {
                     if (response.status === 404) {
-                        // Blog not found, use example blog if ID is "1", otherwise show error
-                        if (id === "1") {
-                            setBlog(exampleBlog);
-                        } else {
-                            throw new Error('Blog not found');
-                        }
-                    } else {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        throw new Error('Blog post not found');
                     }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Blog API Response:', data);
+
+                if (data.blog) {
+                    const transformedBlog = transformApiBlog(data.blog);
+                    setBlog(transformedBlog);
                 } else {
-                    const data = await response.json();
-                    console.log('API Response:', data); // Debug log
-                    
-                    if (data.blog || data) {
-                        // Transform API blog to match our component interface
-                        const blogData = data.blog || data;
-                        const transformedBlog = transformApiBlog(blogData);
-                        setBlog(transformedBlog);
-                    } else {
-                        throw new Error('Invalid blog data received');
-                    }
+                    throw new Error('Blog data not found in response');
                 }
             } catch (err) {
                 console.error('Failed to fetch blog:', err);
                 setError(err instanceof Error ? err.message : 'Failed to fetch blog');
-                
-                // Fallback to example blog if ID is "1"
-                if (id === "1") {
-                    setBlog(exampleBlog);
-                    setError(null); // Clear error since we have fallback
-                }
             } finally {
                 setLoading(false);
             }
         };
 
         fetchBlog();
-    }, [id, transformApiBlog]);
-    
-    // Use example blog as fallback for template
-    const blogData = blog;
+    }, [id]);
+
+    if (loading) {
+        return (
+            <Layout>
+                <div className="max-w-4xl mx-auto px-4 py-8">
+                    <div className="animate-pulse">
+                        <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-4"></div>
+                        <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-8"></div>
+                        <div className="space-y-4">
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-5/6"></div>
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-4/6"></div>
+                        </div>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
+
+    if (error) {
+        return (
+            <Layout>
+                <div className="max-w-4xl mx-auto px-4 py-8">
+                    <div className="text-center">
+                        <div className="mb-6">
+                            <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Blog Not Found</h2>
+                            <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+                            <button
+                                onClick={() => navigate('/blogs')}
+                                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Back to Blogs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
+
+    if (!blog) {
+        return (
+            <Layout>
+                <div className="max-w-4xl mx-auto px-4 py-8">
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Blog not found</h2>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
 
     return (
         <Layout>
             <div className="max-w-4xl mx-auto px-4 py-8">
-                {/* Loading State */}
-                {loading && (
-                    <div className="flex justify-center items-center py-12">
-                        <div className="flex items-center space-x-3">
-                            <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin"></div>
-                            <span className="text-gray-600 dark:text-gray-400">Loading blog...</span>
-                        </div>
-                    </div>
-                )}
+                <article className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+                    {/* Back Button */}
+                    <button
+                        onClick={() => navigate('/blogs')}
+                        className="mb-6 flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Blogs
+                    </button>
 
-                {/* Error State */}
-                {error && !loading && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 mb-6">
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p className="text-red-700 dark:text-red-300">
-                                {error}
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Blog Content */}
-                {!loading && (
-                    <article className="prose lg:prose-xl mx-auto">
-                        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                            {blogData ? blogData.title : `Blog Post #${id}`}
+                    {/* Blog Header */}
+                    <header className="mb-8">
+                        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                            {blog.title}
                         </h1>
-                        <div className="flex items-center space-x-4 mb-8 text-sm text-gray-600 dark:text-gray-400">
-                            <span>By {blogData ? blogData.author.name : "John Doe"}</span>
-                            <span>•</span>
-                            <span>Published on {blogData ? new Date(blogData.publishedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Jan 15, 2025"}</span>
-                            <span>•</span>
-                            <span>{blogData ? blogData.readTime : "5 min read"}</span>
-                            {blogData && blogData.tags && (
-                                <>
-                                    <span>•</span>
-                                    <div className="flex items-center space-x-2">
-                                        {blogData.tags.map((tag, index) => (
-                                            <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
-                        </div>
                         
-                        <div className="prose max-w-none dark:prose-invert">
-                            {blogData ? (
-                                <div>
-                                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                                        {blogData.content}
-                                    </p>
-                                    
-                                    {blogData.id === "1" && (
-                                        <>
-                                            <h2>About Docker Containers</h2>
-                                            <p>
-                                                Docker containers provide a lightweight, portable way to package applications 
-                                                and their dependencies. This technology has become essential for modern 
-                                                development workflows and deployment strategies.
-                                            </p>
-                                            
-                                            <h2>Key Benefits</h2>
-                                            <ul>
-                                                <li>Consistent environments across development, testing, and production</li>
-                                                <li>Improved resource utilization compared to traditional VMs</li>
-                                                <li>Simplified application deployment and scaling</li>
-                                                <li>Enhanced developer productivity through standardized workflows</li>
-                                            </ul>
-                                        </>
-                                    )}
+                        {/* Meta Information */}
+                        <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center">
+                                <div className="w-8 h-8 rounded-full bg-gray-400 dark:bg-gray-600 flex items-center justify-center mr-3">
+                                    <span className="text-white text-sm font-medium">
+                                        {blog.author.name.charAt(0).toUpperCase()}
+                                    </span>
                                 </div>
-                            ) : (
-                                <div>
-                                    <p>
-                                        This is a placeholder for the individual blog post content. 
-                                        In a real application, you would fetch the blog post data 
-                                        based on the ID parameter and display the full content here.
-                                    </p>
-                                    
-                                    <p>
-                                        The content would include the full blog post text, images, 
-                                        code snippets, and other rich media elements.
-                                    </p>
-                                    
-                                    <h2>Example Section</h2>
-                                    
-                                    <p>
-                                        This would be where the actual blog content lives, formatted 
-                                        with proper typography and styling.
-                                    </p>
-                                </div>
-                            )}
+                                <span>By {blog.author.name}</span>
+                            </div>
+                            <span>•</span>
+                            <span>Published on {formatDate(blog.publishedDate)}</span>
+                            <span>•</span>
+                            <span>{blog.readTime}</span>
                         </div>
-                    </article>
-                )}
+
+                        {/* Tags */}
+                        {blog.tags && blog.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-6">
+                                {blog.tags.slice(0, 3).map((tag, index) => (
+                                    <span
+                                        key={index}
+                                        className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm rounded-full border border-blue-200 dark:border-blue-800"
+                                    >
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </header>
+                    
+                    {/* Blog Content */}
+                    <div className="prose prose-lg dark:prose-invert max-w-none">
+                        {blog.content.split('\n\n').map((paragraph, index) => (
+                            <p key={index} className="mb-6 text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {paragraph.trim()}
+                            </p>
+                        ))}
+                    </div>
+
+                    {/* Article Footer */}
+                    <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                                {/* Like Button */}
+                                <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span>Like</span>
+                                </button>
+
+                                {/* Share Button */}
+                                <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                                    </svg>
+                                    <span>Share</span>
+                                </button>
+                            </div>
+
+                            {/* Bookmark Button */}
+                            <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                </svg>
+                                <span>Bookmark</span>
+                            </button>
+                        </div>
+                    </footer>
+                </article>
             </div>
         </Layout>
     );

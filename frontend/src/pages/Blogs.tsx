@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { BlogCard } from '../components/BlogCard';
 import { Layout } from '../components/Layout';
 import { backendUrl } from '../config';
@@ -72,14 +73,12 @@ const mockBlogs = [
   }
 ];
 
-// Interface for API blog response (based on actual API response)
+// Interface for API blog response
 interface ApiBlog {
   id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  published: boolean;
-  // These fields might not be present, so keeping them optional
+  title?: string;
+  content?: string;
+  authorId?: string;
   author?: {
     name?: string;
     username?: string;
@@ -87,6 +86,7 @@ interface ApiBlog {
   createdAt?: string;
   updatedAt?: string;
   publishedDate?: string;
+  published?: boolean;
 }
 
 // Interface for combined blog data
@@ -117,54 +117,54 @@ export const Blogs = () => {
     return `${readTime} min read`;
   }, []);
 
+  // Function to extract tags from title and content
+  const extractTags = useCallback((title: string, content: string): string[] => {
+    const text = `${title} ${content}`.toLowerCase();
+    const commonTechTerms = [
+      'docker', 'kubernetes', 'devops', 'containers', 'microservices', 'api', 'rest',
+      'javascript', 'typescript', 'react', 'node', 'python', 'java', 'spring',
+      'aws', 'azure', 'cloud', 'serverless', 'lambda', 'database', 'sql', 'nosql',
+      'mongodb', 'postgresql', 'redis', 'git', 'ci/cd', 'testing', 'security',
+      'performance', 'optimization', 'architecture', 'design patterns', 'algorithms',
+      'frontend', 'backend', 'fullstack', 'web development', 'mobile', 'ios', 'android'
+    ];
+
+    const foundTags = commonTechTerms.filter(term => 
+      text.includes(term.toLowerCase())
+    );
+
+    // Return maximum of 3 tags, prioritize longer/more specific terms
+    return foundTags
+      .sort((a, b) => b.length - a.length)
+      .slice(0, 3)
+      .map(tag => {
+        // Handle multi-word tags (e.g., "web development" -> "Web Development")
+        return tag.split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      });
+  }, []);
+
   // Function to transform API blog to BlogData format
   const transformApiBlog = useCallback((apiBlog: ApiBlog): BlogData => {
-    // Generate intelligent tags based on title and content
-    const generateTags = (title: string, content: string): string[] => {
-      const techKeywords = [
-        'docker', 'javascript', 'typescript', 'react', 'node', 'python', 
-        'devops', 'aws', 'kubernetes', 'git', 'database', 'api', 'frontend', 
-        'backend', 'fullstack', 'web', 'mobile', 'tutorial', 'guide'
-      ];
-      
-      const text = (title + ' ' + content).toLowerCase();
-      const foundTags = techKeywords.filter(keyword => text.includes(keyword));
-      
-      return foundTags.length > 0 ? foundTags.slice(0, 3) : ['Blog'];
-    };
-    
-    // Generate read time based on content length
-    const readTime = calculateReadTime(apiBlog.content);
-    
-    // Use current date if no creation date provided
+    const content = apiBlog.content || 'No content available';
+    const title = apiBlog.title || 'Untitled';
     const publishedDate = apiBlog.createdAt || apiBlog.publishedDate || new Date().toISOString();
-    
-    // Generate author name from authorId if no author info available
-    const getAuthorName = () => {
-      if (apiBlog.author?.name) return apiBlog.author.name;
-      if (apiBlog.author?.username) return apiBlog.author.username;
-      return `User ${apiBlog.authorId.substring(0, 8)}`;
-    };
-    
-    // Generate avatar placeholder based on authorId
-    const getAvatarPlaceholder = () => {
-      return undefined; // For now, using component's default avatar generation
-    };
     
     return {
       id: apiBlog.id,
-      title: apiBlog.title,
-      content: apiBlog.content,
+      title: title,
+      content: content,
       author: {
-        name: getAuthorName(),
-        avatar: getAvatarPlaceholder()
+        name: apiBlog.author?.name || apiBlog.author?.username || 'Anonymous',
+        avatar: undefined
       },
       publishedDate: publishedDate,
-      readTime: readTime,
-      tags: generateTags(apiBlog.title, apiBlog.content),
-      isBookmarked: false // Default to not bookmarked
+      readTime: calculateReadTime(content),
+      tags: extractTags(title, content),
+      isBookmarked: false
     };
-  }, [calculateReadTime]);
+  }, [calculateReadTime, extractTags]);
 
   // Fetch blogs from API
   useEffect(() => {
@@ -322,10 +322,31 @@ export const Blogs = () => {
 
         {/* Load More */}
         <div className="mt-8 text-center">
-          <button className="px-6 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors">
+          <button className="px-6 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
             Load More Articles
           </button>
         </div>
+
+        {/* Floating Action Button */}
+        <Link
+          to="/publish"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group z-50"
+          title="Write a new blog post"
+        >
+          <svg 
+            className="w-6 h-6 group-hover:scale-110 transition-transform" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M12 4v16m8-8H4" 
+            />
+          </svg>
+        </Link>
       </div>
     </Layout>
   );
