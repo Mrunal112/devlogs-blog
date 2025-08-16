@@ -1,4 +1,32 @@
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
 @import "tailwindcss";
+
+/* Base styles for dark mode */
+html {
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+html.dark {
+  background-color: rgb(17 24 39);
+  color: rgb(243 244 246);
+}
+
+body {
+  background-color: inherit;
+  color: inherit;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  background-color: inherit;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Test element for dark mode */
+.dark .test-dark {
+  background-color: red !important;
+  color: white !important;
+}

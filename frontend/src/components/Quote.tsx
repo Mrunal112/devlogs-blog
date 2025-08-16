@@ -18,15 +18,15 @@ export const Quote = ({ type }: { type: "signin" | "signup" }) => {
     const { quote, author, title } = getQuoteData();
 
     return (
-        <div className="bg-gray-200 h-full flex justify-center items-center px-8">
+        <div className="bg-gray-200 dark:bg-gray-700 h-full flex justify-center items-center px-8">
             <div className="max-w-lg text-left">
-                <div className="text-3xl font-bold mb-6">
+                <div className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
                     "{quote}"
                 </div>
-                <div className="text-xl font-semibold mt-4">
+                <div className="text-xl font-semibold mt-4 text-gray-800 dark:text-gray-200">
                     {author}
                 </div>
-                <div className="text-sm font-light text-slate-400">
+                <div className="text-sm font-light text-slate-400 dark:text-gray-400">
                     {title}
                 </div>
             </div>

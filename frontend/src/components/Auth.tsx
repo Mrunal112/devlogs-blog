@@ -41,19 +41,19 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
   }
 
   return (
-    <div className="h-full flex justify-center items-center bg-white">
+    <div className="h-full flex justify-center items-center bg-white dark:bg-gray-900">
       <div className="">
         <div className="mb-6 text-left">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center">
             {type === "signup" ? "Create an account" : "Welcome back"}
           </h1>
-          <p className="text-sm text-gray-600 text-left">
+          <p className="text-sm text-gray-600 dark:text-gray-400 text-left">
             {type === "signup"
               ? "Already have an account? "
               : "Don't have an account? "}
             <Link
               to={type === "signup" ? "/signin" : "/signup"}
-              className="text-blue-600 underline"
+              className="text-blue-600 dark:text-blue-400 underline"
             >
               {type === "signup" ? "Login" : "Sign Up"}
             </Link>
@@ -63,13 +63,13 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
         <form className="space-y-4" onSubmit={handleSubmit}>
           {type === "signup" && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Username
               </label>
               <input
                 type="text"
                 placeholder="Enter your username"
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 onChange={(e) =>
                   setSignupInputs({ ...signupInputs, username: e.target.value })
                 }
@@ -78,13 +78,13 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Email
             </label>
             <input
               type="email"
               placeholder="m@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               onChange={(e) =>
                 type === "signup"
                   ? setSignupInputs({ ...signupInputs, email: e.target.value })
@@ -94,13 +94,13 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Password
             </label>
             <input
               type="password"
               placeholder="Enter your password"
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               onChange={(e) =>
                 type === "signup"
                   ? setSignupInputs({
@@ -114,7 +114,7 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
 
           <button
             type="submit"
-            className="w-full bg-black text-white py-2 px-4 rounded text-sm font-medium hover:bg-gray-800 transition duration-200 mt-3"
+            className="w-full bg-black dark:bg-white text-white dark:text-black py-2 px-4 rounded text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition duration-200 mt-3"
           >
             {type == "signup" ? "Sign Up" : "Log In"}
           </button>
